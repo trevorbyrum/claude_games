@@ -19,7 +19,7 @@
     --win-glow:rgba(52,211,153,0.6);
   }
   *{margin:0;padding:0;box-sizing:border-box;}
-  body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:12px;overflow-y:auto;-webkit-user-select:none;user-select:none;}
+  body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:8px;overflow-y:auto;-webkit-user-select:none;user-select:none;}
   .screen{display:none;flex-direction:column;align-items:center;width:100%;}
   .screen.active{display:flex;}
 
@@ -65,15 +65,15 @@
   @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
 
   /* Captured rows */
-  .captured-row{width:min(calc(100vw-32px),520px);min-height:28px;display:flex;align-items:center;gap:1px;padding:4px 8px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;flex-wrap:wrap;}
+  .captured-row{width:min(calc(100vw-16px),654px);min-height:28px;display:flex;align-items:center;gap:1px;padding:4px 8px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;flex-wrap:wrap;}
   .captured-row .label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-right:6px;white-space:nowrap;}
   .captured-piece{font-size:16px;line-height:1;}
 
   /* Board */
-  .board-wrapper{background:#12121a;border:3px solid var(--border);border-radius:16px;padding:10px;box-shadow:0 8px 40px rgba(0,0,0,0.5);}
-  .board{display:grid;grid-template-columns:repeat(8,1fr);width:min(calc(100vw-52px),520px);height:min(calc(100vw-52px),520px);}
+  .board-wrapper{background:#12121a;border:3px solid var(--border);border-radius:16px;padding:6px;box-shadow:0 8px 40px rgba(0,0,0,0.5);}
+  .board{display:grid;grid-template-columns:repeat(8,1fr);width:min(calc(100vw-28px),640px);height:min(calc(100vw-28px),640px);}
   .sq{display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;aspect-ratio:1;}
-  .sq .pc{font-size:min(7vw,50px);line-height:1;pointer-events:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.3));}
+  .sq .pc{font-size:min(9vw,64px);line-height:1;pointer-events:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.3));}
   .sq.lt{background:var(--light-sq);} .sq.dk{background:var(--dark-sq);}
   .sq.sel.lt{background:var(--light-hi);} .sq.sel.dk{background:var(--dark-hi);}
   .sq.lm.lt{background:var(--light-mv);} .sq.lm.dk{background:var(--dark-mv);}
@@ -93,7 +93,7 @@
   .promo-btn{width:64px;height:64px;border:2px solid var(--border);background:var(--bg-card);border-radius:var(--radius);cursor:pointer;font-size:36px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
   .promo-btn:hover{border-color:var(--accent);background:var(--accent-glow);}
 
-  .game-btns{display:flex;gap:8px;width:100%;max-width:520px;}
+  .game-btns{display:flex;gap:8px;width:100%;max-width:654px;}
   .sm-btn{flex:1;padding:10px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-sec);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;border-radius:var(--radius);cursor:pointer;transition:all 0.15s;}
   .sm-btn:hover{border-color:var(--accent);color:var(--accent-bright);}
   .gameover{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,10,12,0.88);z-index:100;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
@@ -101,7 +101,7 @@
   .gameover-text{font-size:24px;font-weight:700;}
   .gameover-sub{font-size:14px;color:var(--text-sec);}
   .gameover-btns{display:flex;gap:10px;}
-  .check-alert{display:none;width:min(calc(100vw-32px),520px);background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:var(--radius);padding:10px 16px;text-align:center;}
+  .check-alert{display:none;width:min(calc(100vw-16px),654px);background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:var(--radius);padding:10px 16px;text-align:center;}
   .check-alert.visible{display:block;}
   .check-alert .ct{font-size:13px;font-weight:600;color:#f87171;margin-bottom:6px;}
   .check-alert .cb{display:flex;gap:8px;justify-content:center;}
@@ -173,22 +173,28 @@ function fenToBoard(fen){
 }
 
 // ── Attack detection (Art. 3.1.3: pinned pieces still attack) ──
+// This uses raw piece movement, NOT legal moves, so pinned pieces are included
 function sqAtt(b,r,c,byColor){
   const dir=byColor==='w'?-1:1;
+  // Pawn attacks (diagonal only, Art. 3.7)
   for(const dc of[-1,1]){
     const pr=r-dir,pc=c+dc;
     if(inB(pr,pc)){const p=b[pr][pc];if(p&&isOwn(p,byColor)&&p.toUpperCase()==='P')return true;}
   }
+  // Knight attacks (Art. 3.6)
   for(const[dr,dc]of[[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]]){
     const nr=r+dr,nc=c+dc;
     if(inB(nr,nc)){const p=b[nr][nc];if(p&&isOwn(p,byColor)&&p.toUpperCase()==='N')return true;}
   }
+  // King attacks (Art. 3.8.1 - prevents king adjacency)
   for(const[dr,dc]of[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]){
     const nr=r+dr,nc=c+dc;
     if(inB(nr,nc)){const p=b[nr][nc];if(p&&isOwn(p,byColor)&&p.toUpperCase()==='K')return true;}
   }
+  // Bishop/Queen diagonal attacks (Art. 3.2, 3.4)
   for(const[dr,dc]of[[-1,-1],[-1,1],[1,-1],[1,1]]){
     for(let i=1;i<8;i++){const nr=r+dr*i,nc=c+dc*i;if(!inB(nr,nc))break;const p=b[nr][nc];if(p){if(isOwn(p,byColor)&&(p.toUpperCase()==='B'||p.toUpperCase()==='Q'))return true;break;}}}
+  // Rook/Queen straight attacks (Art. 3.3, 3.4)
   for(const[dr,dc]of[[-1,0],[1,0],[0,-1],[0,1]]){
     for(let i=1;i<8;i++){const nr=r+dr*i,nc=c+dc*i;if(!inB(nr,nc))break;const p=b[nr][nc];if(p){if(isOwn(p,byColor)&&(p.toUpperCase()==='R'||p.toUpperCase()==='Q'))return true;break;}}}
   return false;
@@ -197,35 +203,42 @@ function sqAtt(b,r,c,byColor){
 function findKing(b,c){const k=c==='w'?'K':'k';for(let r=0;r<8;r++)for(let cc=0;cc<8;cc++)if(b[r][cc]===k)return[r,cc];return null;}
 function inCheck(b,c){const kp=findKing(b,c);return kp?sqAtt(b,kp[0],kp[1],opp(c)):false;}
 
+// Simulate move for legality check (handles en passant pawn removal)
 function simMove(b,fr,fc,tr,tc,epTarget){
   const nb=b.map(r=>[...r]);
   const piece=nb[fr][fc];
   const type=piece?piece.toUpperCase():'';
+  // En passant: remove captured pawn (Art. 3.7.4)
   if(type==='P'&&epTarget&&tr===epTarget[0]&&tc===epTarget[1]){
-    nb[fr][tc]=null;
+    nb[fr][tc]=null; // remove the pawn that double-pushed
   }
+  // Castling: move rook too
   if(type==='K'&&Math.abs(tc-fc)===2){
-    if(tc===6){nb[fr][5]=nb[fr][7];nb[fr][7]=null;}
-    if(tc===2){nb[fr][3]=nb[fr][0];nb[fr][0]=null;}
+    if(tc===6){nb[fr][5]=nb[fr][7];nb[fr][7]=null;} // kingside
+    if(tc===2){nb[fr][3]=nb[fr][0];nb[fr][0]=null;} // queenside
   }
   nb[tr][tc]=nb[fr][fc]; nb[fr][fc]=null;
   return nb;
 }
 
+// ── Pseudo-legal move generation (Art. 3) ──
 function pseudoMoves(b,r,c){
   const piece=b[r][c];if(!piece)return[];
   const col=colorOf(piece),type=piece.toUpperCase(),dir=col==='w'?-1:1,moves=[];
 
   if(type==='P'){
+    // Forward (Art. 3.7a)
     if(inB(r+dir,c)&&!b[r+dir][c]){
       moves.push([r+dir,c,null]);
       const startR=col==='w'?6:1;
       if(r===startR&&!b[r+2*dir][c])moves.push([r+2*dir,c,null]);
     }
+    // Diagonal captures (Art. 3.7c)
     for(const dc of[-1,1]){
       const nr=r+dir,nc=c+dc;
       if(!inB(nr,nc))continue;
       if(b[nr][nc]&&isEnemy(b[nr][nc],col))moves.push([nr,nc,null]);
+      // En passant (Art. 3.7.4)
       if(epSq&&nr===epSq[0]&&nc===epSq[1])moves.push([nr,nc,'ep']);
     }
   }
@@ -234,14 +247,17 @@ function pseudoMoves(b,r,c){
   if(type==='R'||type==='Q'){for(const[dr,dc]of[[-1,0],[1,0],[0,-1],[0,1]]){for(let i=1;i<8;i++){const nr=r+dr*i,nc=c+dc*i;if(!inB(nr,nc)||isOwn(b[nr][nc],col))break;moves.push([nr,nc,null]);if(isEnemy(b[nr][nc],col))break;}}}
   if(type==='K'){
     for(const[dr,dc]of[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]){const nr=r+dr,nc=c+dc;if(inB(nr,nc)&&!isOwn(b[nr][nc],col))moves.push([nr,nc,null]);}
+    // Castling (Art. 3.8.2)
     const kr=col==='w'?7:0;
     if(r===kr&&c===4){
       const enemy=opp(col);
+      // Kingside
       const ksR=col==='w'?'K':'k';
       if(castleR[ksR]&&!b[kr][5]&&!b[kr][6]&&b[kr][7]&&b[kr][7].toUpperCase()==='R'&&isOwn(b[kr][7],col)){
         if(!sqAtt(b,kr,4,enemy)&&!sqAtt(b,kr,5,enemy)&&!sqAtt(b,kr,6,enemy))
           moves.push([kr,6,'castle']);
       }
+      // Queenside: b-file must be empty but need NOT be safe (Art. 3.8.2)
       const qsR=col==='w'?'Q':'q';
       if(castleR[qsR]&&!b[kr][3]&&!b[kr][2]&&!b[kr][1]&&b[kr][0]&&b[kr][0].toUpperCase()==='R'&&isOwn(b[kr][0],col)){
         if(!sqAtt(b,kr,4,enemy)&&!sqAtt(b,kr,3,enemy)&&!sqAtt(b,kr,2,enemy))
@@ -252,6 +268,7 @@ function pseudoMoves(b,r,c){
   return moves;
 }
 
+// ── Legal moves (Art. 3.9.2: no move may leave own king in check) ──
 function legalMoves(b,r,c){
   const piece=b[r][c];if(!piece)return[];
   const col=colorOf(piece),type=piece.toUpperCase();
@@ -259,7 +276,9 @@ function legalMoves(b,r,c){
   const legal=[];
   for(const[tr,tc,flag]of raw){
     const nb=simMove(b,r,c,tr,tc,epSq);
+    // After the move, is our king safe?
     if(!inCheck(nb,col)){
+      // Promotion: generate 4 moves (Art. 3.7.5)
       if(type==='P'&&(tr===0||tr===7)){
         legal.push([tr,tc,'=Q'],[tr,tc,'=R'],[tr,tc,'=B'],[tr,tc,'=N']);
       }else{
@@ -276,31 +295,37 @@ function hasAnyLegal(b,col){
   return false;
 }
 
+// ── Castle rights mask (Art. 3.8.2.1 + rook capture revocation) ──
 const CASTLE_MASK=new Map();
 function initCastleMask(){
   CASTLE_MASK.clear();
-  CASTLE_MASK.set('7,4',{K:false,Q:false});
-  CASTLE_MASK.set('0,4',{k:false,q:false});
-  CASTLE_MASK.set('7,0',{Q:false});
-  CASTLE_MASK.set('7,7',{K:false});
-  CASTLE_MASK.set('0,0',{q:false});
-  CASTLE_MASK.set('0,7',{k:false});
+  // King moves kill both rights; rook moves/captures kill that side
+  CASTLE_MASK.set('7,4',{K:false,Q:false}); // white king e1
+  CASTLE_MASK.set('0,4',{k:false,q:false}); // black king e8
+  CASTLE_MASK.set('7,0',{Q:false}); // white rook a1
+  CASTLE_MASK.set('7,7',{K:false}); // white rook h1
+  CASTLE_MASK.set('0,0',{q:false}); // black rook a8
+  CASTLE_MASK.set('0,7',{k:false}); // black rook h8
 }
 initCastleMask();
 
 function updateCastleRights(fr,fc,tr,tc){
+  // Check FROM square (piece moved)
   const fk=fr+','+fc;
   if(CASTLE_MASK.has(fk)){const m=CASTLE_MASK.get(fk);for(const k in m)castleR[k]=m[k];}
+  // Check TO square (piece captured on original rook square - Art. 3.8.2.1)
   const tk=tr+','+tc;
   if(CASTLE_MASK.has(tk)){const m=CASTLE_MASK.get(tk);for(const k in m)castleR[k]=m[k];}
 }
 
+// ── Execute move ──
 function makeMove(fr,fc,tr,tc,promoChoice){
   const piece=board[fr][fc];
   const col=colorOf(piece),type=piece.toUpperCase();
   const captured=board[tr][tc];
   let flag=null;
 
+  // En passant capture
   if(type==='P'&&epSq&&tr===epSq[0]&&tc===epSq[1]){
     const capPiece=board[fr][tc];
     if(capPiece){if(col===playerColor)capByPlayer.push(capPiece);else capByAI.push(capPiece);}
@@ -308,35 +333,45 @@ function makeMove(fr,fc,tr,tc,promoChoice){
     flag='ep';
   }
 
+  // Normal capture
   if(captured){if(col===playerColor)capByPlayer.push(captured);else capByAI.push(captured);}
 
+  // Update en passant target (Art. 3.7.4: only after double push)
   epSq=null;
   if(type==='P'&&Math.abs(tr-fr)===2)epSq=[(fr+tr)/2,fc];
 
+  // Castling: move rook (Art. 3.8.2)
   if(type==='K'&&Math.abs(tc-fc)===2){
     if(tc===6){board[fr][5]=board[fr][7];board[fr][7]=null;}
     if(tc===2){board[fr][3]=board[fr][0];board[fr][0]=null;}
     flag='castle';
   }
 
+  // Update castle rights (both from and to squares)
   updateCastleRights(fr,fc,tr,tc);
 
+  // Move piece
   board[tr][tc]=piece; board[fr][fc]=null;
 
+  // Promotion (Art. 3.7.5)
   if(type==='P'&&(tr===0||tr===7)){
     const pc=promoChoice||'Q';
     board[tr][tc]=col==='w'?pc.toUpperCase():pc.toLowerCase();
   }
 
+  // Halfmove clock (Art. 9.3)
   if(type==='P'||captured||flag==='ep')halfClock=0;else halfClock++;
 
+  // Fullmove (increments after black's move)
   if(col==='b')fullMove++;
 
   lastMove=[fr,fc,tr,tc];
   moveHist.push({from:toAlg(fr,fc),to:toAlg(tr,tc),piece:type,col,promo:promoChoice||null});
 
+  // Switch turn
   turn=opp(col);
 
+  // Check game state
   const enemyInCheck=inCheck(board,turn);
   const enemyHasLegal=hasAnyLegal(board,turn);
 
@@ -352,6 +387,7 @@ function makeMove(fr,fc,tr,tc,promoChoice){
     showCheckAlert('Your King is in check!');
   }
 
+  // Fifty-move draw (Art. 9.6.2: automatic at 75 moves = 150 half-moves)
   if(halfClock>=150&&!gameOver){gameOver=true;setTimeout(()=>showGameover('Draw','75-move rule'),400);}
 
   renderBoard();renderCaptured();
@@ -368,10 +404,14 @@ function dismissCheck(){document.getElementById('checkAlert').classList.remove('
 function forfeit(){gameOver=true;document.getElementById('checkAlert').classList.remove('visible');showGameover('You forfeited','Claude wins');}
 function showGameover(msg,sub){document.getElementById('goText').textContent=msg;document.getElementById('goSub').textContent=sub;document.getElementById('gameover').classList.add('visible');}
 
+// Coin toss (same as Connect Four)
 let pCall='',cResult='';
 function startCoinToss(){showScreen('coinScreen');}
 function flipCoin(call){
-  pCall=call;cResult=Math.random()<0.5?'heads':'tails';
+  pCall=call;
+  // Use multiple entropy sources to avoid any PRNG bias in sandbox
+  const rand=Math.random()+Math.random();
+  cResult=(rand%1)<0.5?'heads':'tails';
   const track=document.getElementById('spinnerTrack');track.innerHTML='';
   const items=[];for(let i=0;i<20;i++)items.push(i%2===0?'HEADS':'TAILS');
   items.push(cResult.toUpperCase());
@@ -423,6 +463,7 @@ function renderBoard(dropR,dropC){
     if(aCheck&&aKing&&r===aKing[0]&&c===aKing[1])sq.classList.add('chk');
 
     if(selected){
+      // Show valid move dots (deduplicated - promotion generates 4 moves to same square)
       const isValid=validMoves.some(([mr,mc])=>mr===r&&mc===c);
       if(isValid)sq.classList.add(board[r][c]&&isEnemy(board[r][c],playerColor)?'vc':'vm');
     }
@@ -459,6 +500,7 @@ function handleClick(r,c){
     if(isValid){
       const piece=board[selected[0]][selected[1]];
       const type=piece.toUpperCase();
+      // Check if promotion
       if(type==='P'&&(r===0||r===7)){
         pendingPromo={fr:selected[0],fc:selected[1],tr:r,tc:c};
         showPromoChoice();
@@ -479,6 +521,7 @@ function handleClick(r,c){
 
   if(board[r][c]&&isOwn(board[r][c],playerColor)){
     const moves=legalMoves(board,r,c);
+    // Deduplicate squares (promotions generate 4 moves to same square)
     const seen=new Set();
     const deduped=[];
     for(const[mr,mc]of moves){const key=mr+','+mc;if(!seen.has(key)){seen.add(key);deduped.push([mr,mc]);}}
@@ -522,10 +565,12 @@ function renderCaptured(){
 }
 
 // ═══════════════════════════════════════════
-// CLAUDE AI
+// CLAUDE AI - MARKDOWN TABLE + PROMPT
 // ═══════════════════════════════════════════
 function boardToMD(){
   let d='You are playing '+( aiColor==='w'?'White (uppercase)':'Black (lowercase)')+'.\n\n';
+
+  // Markdown table (Art. 3 piece symbols)
   d+='|   | a | b | c | d | e | f | g | h |\n';
   d+='|---|---|---|---|---|---|---|---|---|\n';
   for(let r=0;r<8;r++){
@@ -539,8 +584,10 @@ function boardToMD(){
 
   d+='\nPiece key: K=King Q=Queen R=Rook B=Bishop N=Knight P=Pawn. Uppercase=White, lowercase=Black.\n';
 
+  // In check?
   if(inCheck(board,aiColor))d+='\n⚠ YOUR KING IS IN CHECK. You MUST resolve it.\n';
 
+  // Legal moves grouped by piece
   d+='\nYour legal moves:\n';
   for(let r=0;r<8;r++)for(let c=0;c<8;c++){
     const p=board[r][c];if(!p||!isOwn(p,aiColor))continue;
@@ -554,27 +601,58 @@ function boardToMD(){
       const key=to+(flag||'');
       if(seen.has(key))continue;seen.add(key);
       let desc=to;
-      if(board[tr][tc])desc+=' captures '+PN[board[tr][tc]];
-      if(flag==='ep')desc+=' (en passant)';
+      const capPiece=board[tr][tc];
+      if(capPiece)desc+=' captures '+PN[capPiece]+' (value '+PV[capPiece.toUpperCase()]+')';
+      if(flag==='ep')desc+=' (en passant capture)';
       if(flag==='castle')desc=tc===6?'O-O (castle kingside)':'O-O-O (castle queenside)';
       if(flag&&flag.startsWith('='))desc+=' promote to '+(flag==='=Q'?'Queen':flag==='=R'?'Rook':flag==='=B'?'Bishop':'Knight');
+      // Check if gives check
       const nb=simMove(board,r,c,tr,tc,epSq);
       if(flag&&flag.startsWith('=')){
         nb[tr][tc]=aiColor==='w'?flag[1].toUpperCase():flag[1].toLowerCase();
       }
       if(inCheck(nb,opp(aiColor)))desc+=' CHECK';
+      // Safety: is the destination attacked by opponent?
+      if(flag!=='castle'){
+        const destAttacked=sqAtt(nb,tr,tc,opp(aiColor));
+        const myVal=PV[p.toUpperCase()];
+        if(destAttacked){
+          const capVal=capPiece?PV[capPiece.toUpperCase()]:0;
+          if(capVal>=myVal){
+            desc+=' (trade: you lose '+myVal+', take '+capVal+')';
+          }else if(capVal>0){
+            desc+=' ⚠ BAD TRADE: you lose '+myVal+' to take '+capVal;
+          }else{
+            desc+=' ⚠ DANGER: piece is unprotected there, you could lose it (value '+myVal+')';
+          }
+        }
+      }
       details.push(desc);
     }
     d+='  '+name+' '+from+': '+details.join(', ')+'\n';
   }
 
+  // Your pieces under attack
+  const myThreats=[];
+  for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+    const p=board[r][c];if(!p||!isOwn(p,aiColor))continue;
+    if(sqAtt(board,r,c,opp(aiColor))){
+      const defended=sqAtt(board,r,c,aiColor);
+      const val=PV[p.toUpperCase()];
+      if(!defended)myThreats.push('⚠ Your '+PN[p]+' on '+toAlg(r,c)+' (value '+val+') is ATTACKED and UNDEFENDED!');
+      else myThreats.push('Your '+PN[p]+' on '+toAlg(r,c)+' is attacked but defended');
+    }
+  }
+  if(myThreats.length)d+='\nYour pieces at risk:\n'+myThreats.join('\n')+'\n';
+
+  // Opponent undefended pieces (free captures)
   const threats=[];
   for(let r=0;r<8;r++)for(let c=0;c<8;c++){
     const p=board[r][c];if(!p||!isOwn(p,opp(aiColor)))continue;
     if(p.toUpperCase()==='P')continue;
-    if(!sqAtt(board,r,c,opp(aiColor)))threats.push(PN[p]+' on '+toAlg(r,c)+' is undefended');
+    if(!sqAtt(board,r,c,opp(aiColor)))threats.push(PN[p]+' on '+toAlg(r,c)+' (value '+PV[p.toUpperCase()]+') is UNDEFENDED');
   }
-  if(threats.length)d+='\nOpponent undefended pieces: '+threats.join(', ')+'\n';
+  if(threats.length)d+='\nFree captures available (opponent undefended pieces): '+threats.join(', ')+'\n';
 
   if(moveHist.length){
     const last=moveHist.slice(-6);
@@ -586,25 +664,39 @@ function boardToMD(){
 
 async function askClaude(){
   const state=boardToMD();
-  const sys=`You play chess as ${aiColor==='w'?'White':'Black'}. Read the board table carefully. Choose from your legal moves listed.
+  const sys=`You play chess as ${aiColor==='w'?'White':'Black'}. Your GOAL is to capture the opponent's King (checkmate). Study the board table and your legal moves carefully.
 
-RULES REMINDER:
-- Pawns move forward, capture diagonally. Promote on last rank.
-- Knights move in L-shape and jump. Bishops move diagonally. Rooks move straight. Queen does both.
-- King moves one square. Castling: O-O or O-O-O.
-- You cannot move into check or leave your king in check.
+PIECE VALUES: Queen=9, Rook=5, Bishop=3, Knight=3, Pawn=1, King=priceless.
 
-STRATEGY:
-1. If a move says CHECK or wins material, strongly consider it.
-2. Develop knights and bishops early. Castle early.
-3. Control the center (d4,d5,e4,e5).
-4. Don't move the same piece twice in the opening.
-5. Capture undefended pieces.
-6. Protect your pieces.
+HOW TO WIN:
+1. Checkmate the opponent's King. Every move should work toward this.
+2. Build attacks by coordinating multiple pieces toward the opponent's King.
+3. Control the center and open lines (files, diagonals) that point at the King.
 
-Reply with ONLY your move as: [from][to] (example: e7e5, g8f6, e8g8 for castle)
-If promoting, add the piece letter: e7e8q
-Just the move, nothing else.`;
+PIECE PRESERVATION IS CRITICAL:
+- NEVER lose a piece for free. Before moving any piece, check: is the destination square attacked by the opponent? If yes, is the piece defended? If you would lose material, DO NOT make that move.
+- Only sacrifice a piece if it IMMEDIATELY results in one of these:
+  (a) You capture a piece worth MORE than what you sacrifice (e.g., lose a Knight to take a Queen).
+  (b) The sacrifice delivers CHECK or sets up CHECKMATE within 1-2 moves.
+  (c) The sacrifice is a pawn and it opens a critical attack line toward the King.
+- If none of those apply, keep your pieces safe.
+
+OPENING PRIORITIES (first 8-10 moves):
+1. Move pawns to control the center (e4/d4 or e5/d5).
+2. Develop Knights and Bishops to active squares. Each piece moves ONCE before any piece moves twice.
+3. Castle early to protect your King.
+4. Do NOT move your Queen out early. Do NOT move your King unless castling.
+
+MIDDLEGAME PRIORITIES:
+1. Look for moves marked CHECK in the legal moves list. Checks force the opponent to react.
+2. Capture undefended enemy pieces (free material).
+3. Create threats against multiple targets at once (forks, pins, discovered attacks).
+4. Connect your Rooks on open files. Put Rooks on files with no pawns.
+5. Push passed pawns toward promotion.
+
+Reply with ONLY your move: [from][to] (example: e7e5, g8f6, e8g8 for castling)
+If promoting, add the piece: e7e8q
+Nothing else. Just the move.`;
 
   try{
     const resp=await fetch('https://api.anthropic.com/v1/messages',{
@@ -616,6 +708,7 @@ Just the move, nothing else.`;
     const data=await resp.json();
     const text=data.content.filter(b=>b.type==='text').map(b=>b.text).join('').trim().toLowerCase();
 
+    // Parse move: expect 4-5 chars like e2e4 or e7e8q
     let from=null,to=null,promo=null;
     const patterns=[
       /\b([a-h][1-8])([a-h][1-8])([qrbn])?\b/,
@@ -623,6 +716,7 @@ Just the move, nothing else.`;
       /o-o-o/i,/o-o/i
     ];
 
+    // Handle castling notation
     if(/o-o-o/i.test(text)){
       const kr=aiColor==='w'?7:0;
       from=toAlg(kr,4);to=toAlg(kr,2);
@@ -641,6 +735,7 @@ Just the move, nothing else.`;
     const[fr,fc]=fromAlg(from);
     const[tr,tc]=fromAlg(to);
 
+    // Validate it's a legal move
     const legal=legalMoves(board,fr,fc);
     const isLegal=legal.some(([mr,mc,flag])=>{
       if(mr!==tr||mc!==tc)return false;
@@ -649,15 +744,18 @@ Just the move, nothing else.`;
     });
 
     if(!isLegal){
+      // Try fallback: find any legal move
       console.error('Illegal move:',from,to,promo,'Trying fallback');
       const fb=findBestFallback();
       if(fb){makeMove(fb[0],fb[1],fb[2],fb[3],fb[4]);if(!gameOver)setStatus('Your turn');return;}
       throw new Error('Illegal: '+from+to);
     }
 
+    // Determine promo choice
     let promoChoice=null;
     if(promo)promoChoice=promo.toUpperCase();
     else{
+      // Check if this is a promotion move
       const piece=board[fr][fc];
       if(piece&&piece.toUpperCase()==='P'&&(tr===0||tr===7))promoChoice='Q';
     }
@@ -667,6 +765,7 @@ Just the move, nothing else.`;
 
   }catch(err){
     document.getElementById('thinkingDots').classList.remove('visible');
+    // Fallback AI move
     const fb=findBestFallback();
     if(fb){makeMove(fb[0],fb[1],fb[2],fb[3],fb[4]);if(!gameOver)setStatus('Your turn');return;}
     setStatus('Error: '+err.message);turn=playerColor;
@@ -674,6 +773,7 @@ Just the move, nothing else.`;
   }
 }
 
+// Simple fallback AI: check for wins, blocks, captures, then center moves
 function findBestFallback(){
   const col=aiColor;
   const moves=[];
@@ -683,12 +783,16 @@ function findBestFallback(){
       let score=0;
       const cap=board[tr][tc];
       if(cap)score+=PV[cap.toUpperCase()]*10;
+      // Check if gives check
       const nb=simMove(board,r,c,tr,tc,epSq);
       if(inCheck(nb,opp(col)))score+=50;
+      // Center bonus
       if(tr>=2&&tr<=5&&tc>=2&&tc<=5)score+=2;
       if(tr>=3&&tr<=4&&tc>=3&&tc<=4)score+=3;
+      // Development bonus
       const type=board[r][c].toUpperCase();
       if(type==='N'||type==='B'){const startR=col==='w'?7:0;if(r===startR)score+=5;}
+      // Avoid moving king early
       if(type==='K'&&moveHist.length<20)score-=3;
       let promo=null;
       if(flag&&flag.startsWith('='))promo=flag[1];
@@ -697,6 +801,7 @@ function findBestFallback(){
   }
   if(moves.length===0)return null;
   moves.sort((a,b)=>b[5]-a[5]);
+  // Add some randomness among top moves
   const top=moves.filter(m=>m[5]>=moves[0][5]-5);
   const pick=top[Math.floor(Math.random()*top.length)];
   return[pick[0],pick[1],pick[2],pick[3],pick[4]];
