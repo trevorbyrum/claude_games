@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Games</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap');
+  :root {
+    --bg:#0a0a0c; --bg-card:#141418; --bg-hover:#1a1a22;
+    --text:#f0f0f2; --text-sec:#8a8a96; --text-muted:#5a5a66;
+    --accent:#3b82f6; --accent-bright:#60a5fa;
+    --border:#222230; --border-hover:#3a3a4a;
+    --player:#60a5fa; --player-glow:rgba(96,165,250,0.4);
+    --claude:#e27b58; --claude-glow:rgba(226,123,88,0.4);
+    --radius:14px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    font-family:'DM Sans',-apple-system,sans-serif;
+    background:var(--bg);color:var(--text);
+    min-height:100vh;padding:48px 20px;
+    display:flex;flex-direction:column;align-items:center;
+    -webkit-font-smoothing:antialiased;
+  }
+  .hero{display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:48px;max-width:560px;text-align:center;}
+  .hero-pieces{display:flex;gap:10px;font-size:44px;line-height:1;}
+  .hero-pieces .p{color:var(--player);filter:drop-shadow(0 0 18px var(--player-glow));}
+  .hero-pieces .c{color:var(--claude);filter:drop-shadow(0 0 18px var(--claude-glow));}
+  h1{font-size:38px;font-weight:700;letter-spacing:-0.025em;}
+  .tagline{font-size:16px;color:var(--text-sec);line-height:1.5;max-width:440px;}
+  .tagline code{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent-bright);background:rgba(59,130,246,0.08);padding:2px 6px;border-radius:4px;}
+
+  .games{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;width:100%;max-width:720px;margin-bottom:40px;}
+  .game-card{
+    background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+    padding:24px;text-decoration:none;color:inherit;
+    transition:all 0.2s ease;display:flex;flex-direction:column;gap:10px;
+  }
+  .game-card:hover{border-color:var(--border-hover);background:var(--bg-hover);transform:translateY(-2px);}
+  .game-icon{font-size:36px;line-height:1;margin-bottom:6px;}
+  .game-icon.four{display:flex;gap:3px;}
+  .game-icon.four span{width:18px;height:18px;border-radius:50%;}
+  .game-icon.four .a{background:var(--player);box-shadow:0 0 10px var(--player-glow);}
+  .game-icon.four .b{background:var(--claude);box-shadow:0 0 10px var(--claude-glow);}
+  .game-name{font-size:20px;font-weight:600;letter-spacing:-0.01em;}
+  .game-desc{font-size:13px;color:var(--text-sec);line-height:1.5;}
+  .game-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);margin-top:4px;}
+
+  .how{max-width:560px;width:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;}
+  .how-title{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:12px;}
+  .how ol{list-style:none;counter-reset:step;display:flex;flex-direction:column;gap:10px;}
+  .how li{counter-increment:step;font-size:14px;color:var(--text-sec);line-height:1.5;padding-left:28px;position:relative;}
+  .how li::before{content:counter(step);position:absolute;left:0;top:0;width:20px;height:20px;border-radius:50%;background:rgba(59,130,246,0.12);color:var(--accent-bright);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;}
+
+  footer{margin-top:48px;font-size:12px;color:var(--text-muted);}
+  footer a{color:var(--text-sec);text-decoration:none;}
+  footer a:hover{color:var(--accent-bright);}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-pieces">
+    <span class="p">♔</span><span class="c">♚</span>
+  </div>
+  <h1>Claude Games</h1>
+  <div class="tagline">Single-file HTML games you play against <strong>Claude Sonnet</strong> inside Claude Desktop's artifact pane. No backend, no API key — just drop the file into a conversation.</div>
+</div>
+
+<div class="games">
+  <a href="connect-four.html" class="game-card">
+    <div class="game-icon four">
+      <span class="a"></span><span class="b"></span><span class="a"></span><span class="b"></span>
+    </div>
+    <div class="game-name">Connect Four</div>
+    <div class="game-desc">Classic 7×6 drop-four. Coin toss picks who goes first. Hover a column to preview the drop.</div>
+    <div class="game-meta">connect-four.html</div>
+  </a>
+
+  <a href="chess.html" class="game-card">
+    <div class="game-icon">♞</div>
+    <div class="game-name">Chess</div>
+    <div class="game-desc">Full FIDE rules: castling, en passant, promotion, 75-move draw. Board sent as markdown; legal moves pre-computed.</div>
+    <div class="game-meta">chess.html</div>
+  </a>
+</div>
+
+<div class="how">
+  <div class="how-title">How to play</div>
+  <ol>
+    <li>Open a conversation in <a href="https://claude.ai/download" style="color:var(--accent-bright);text-decoration:none;">Claude Desktop</a> or claude.ai.</li>
+    <li>Paste the raw contents of a game file into the chat (or link to the raw GitHub URL).</li>
+    <li>Ask Claude to render it as an HTML artifact.</li>
+    <li>Play in the artifact pane.</li>
+  </ol>
+</div>
+
+<footer>
+  <a href="https://github.com/trevorbyrum/claude_games">github.com/trevorbyrum/claude_games</a> · MIT
+</footer>
+
+</body>
+</html>
